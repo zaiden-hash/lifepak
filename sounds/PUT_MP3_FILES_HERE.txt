@@ -1,0 +1,11 @@
+Drop your MP3 files in this folder using these exact names:
+
+ventilate.mp3
+analyzing.mp3
+shock-advised.mp3
+charged.mp3
+no-shock.mp3
+shock-delivered.mp3
+
+See the main README.md for what each one is used for.
+Missing files automatically fall back to the phone's built-in voice.

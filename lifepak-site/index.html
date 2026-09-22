@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LIFEPAK 15 · CPR/AED Trainer</title>
+<style>
+  :root{
+    --bg:#070b0d;
+    --panel:#111a1f;
+    --panel2:#0d1518;
+    --line:#22333a;
+    --phosphor:#3dff8e;
+    --phosphor-dim:#1f7a49;
+    --amber:#ffb020;
+    --red:#ff4d4d;
+    --ink:#dfe9ec;
+    --ink-dim:#7f9498;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+    user-select:none;
+    display:flex;
+    flex-direction:column;
+    min-height:100%;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  .brand{
+    font-family:'Courier New',monospace;
+    letter-spacing:2px;
+    font-size:13px;
+    color:var(--ink-dim);
+    text-align:center;
+    padding:10px 0 4px;
+  }
+  .screen{
+    background:#000;
+    margin:0 12px 10px;
+    border-radius:6px;
+    border:1px solid var(--line);
+    padding:10px 14px 12px;
+    position:relative;
+    overflow:hidden;
+  }
+  .screen svg{display:block;width:100%;height:64px;}
+  .status-line{
+    font-family:'Courier New',monospace;
+    font-size:15px;
+    color:var(--phosphor);
+    min-height:22px;
+    letter-spacing:0.5px;
+  }
+  .sub-line{
+    font-family:'Courier New',monospace;
+    font-size:12px;
+    color:var(--ink-dim);
+    margin-top:2px;
+    min-height:16px;
+  }
+  .counter{
+    position:absolute;
+    top:10px;
+    right:14px;
+    font-family:'Courier New',monospace;
+    font-size:28px;
+    color:var(--amber);
+    font-weight:bold;
+  }
+  main{flex:1;padding:0 12px 20px;display:flex;flex-direction:column;gap:14px;}
+  section{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px;
+  }
+  h2{
+    margin:0 0 10px;
+    font-size:12px;
+    color:var(--ink-dim);
+    letter-spacing:1.5px;
+    font-weight:600;
+  }
+  .row{display:flex;gap:8px;flex-wrap:wrap;}
+  .chip{
+    flex:1;
+    min-width:80px;
+    background:var(--panel2);
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:10px 6px;
+    border-radius:6px;
+    font-size:13px;
+    text-align:center;
+    cursor:pointer;
+  }
+  .chip.active{
+    background:var(--phosphor-dim);
+    border-color:var(--phosphor);
+    color:#eafff2;
+  }
+  .bigbtn{
+    width:100%;
+    padding:20px;
+    margin-top:10px;
+    border-radius:8px;
+    border:none;
+    font-size:18px;
+    font-weight:700;
+    letter-spacing:0.5px;
+    cursor:pointer;
+    color:#08110a;
+  }
+  .bigbtn.start{background:var(--phosphor);}
+  .bigbtn.stop{background:var(--red);color:#2a0000;}
+  .bigbtn:disabled{background:#2a3438;color:#5a6a6e;cursor:not-allowed;}
+  .aed-btn{background:var(--amber);color:#2a1a00;}
+  .aed-btn.shock{background:var(--red);color:#2a0000;}
+  footer{
+    text-align:center;
+    font-family:'Courier New',monospace;
+    font-size:10px;
+    color:var(--ink-dim);
+    padding-bottom:10px;
+  }
+  .badge{
+    font-family:'Courier New',monospace;
+    font-size:9px;
+    color:var(--ink-dim);
+    text-align:center;
+    padding-bottom:4px;
+  }
+</style>
+</head>
+<body>
+  <div class="brand">LIFEPAK · 15 &nbsp;COSPLAY EDITION</div>
+  <div class="badge" id="soundBadge">checking sound files…</div>
+
+  <div class="screen">
+    <div class="counter" id="counter">--</div>
+    <svg viewBox="0 0 400 64" preserveAspectRatio="none">
+      <polyline id="ecg" fill="none" stroke="#3dff8e" stroke-width="2"
+        points="0,32 40,32 55,32 60,10 65,55 70,20 75,32 400,32"/>
+    </svg>
+    <div class="status-line" id="statusLine">READY</div>
+    <div class="sub-line" id="subLine">Select a mode below</div>
+  </div>
+
+  <main>
+    <section>
+      <h2>CPR ASSIST</h2>
+      <div class="row" id="ratioRow">
+        <div class="chip active" data-ratio="30:2">30:2</div>
+        <div class="chip" data-ratio="15:2">15:2</div>
+        <div class="chip" data-ratio="cont">Continuous</div>
+      </div>
+      <button class="bigbtn start" id="cprBtn">START CPR</button>
+    </section>
+
+    <section>
+      <h2>AED</h2>
+      <div class="row" id="outcomeRow">
+        <div class="chip active" data-outcome="shock">Shock advised</div>
+        <div class="chip" data-outcome="noshock">No shock advised</div>
+      </div>
+      <button class="bigbtn aed-btn" id="analyzeBtn">ANALYZE</button>
+      <button class="bigbtn aed-btn shock" id="shockBtn" disabled>SHOCK</button>
+    </section>
+  </main>
+
+  <footer>Arts &amp; crafts prop · not a real medical device</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var statusLine = document.getElementById('statusLine');
+  var subLine = document.getElementById('subLine');
+  var counterEl = document.getElementById('counter');
+  var cprBtn = document.getElementById('cprBtn');
+  var analyzeBtn = document.getElementById('analyzeBtn');
+  var shockBtn = document.getElementById('shockBtn');
+  var soundBadge = document.getElementById('soundBadge');
+  var ratio = '30:2';
+  var outcome = 'shock';
+
+  try {
+    var savedRatio = localStorage.getItem('lp15_ratio');
+    var savedOutcome = localStorage.getItem('lp15_outcome');
+    if (savedRatio) ratio = savedRatio;
+    if (savedOutcome) outcome = savedOutcome;
+  } catch(e) {}
+
+  function setActiveChip(row, attr, val){
+    var chips = document.getElementById(row).children;
+    for (var i=0;i<chips.length;i++){
+      chips[i].classList.toggle('active', chips[i].dataset[attr] === val);
+    }
+  }
+  setActiveChip('ratioRow','ratio',ratio);
+  setActiveChip('outcomeRow','outcome',outcome);
+
+  document.getElementById('ratioRow').addEventListener('click', function(e){
+    var t = e.target.closest('.chip');
+    if(!t) return;
+    ratio = t.dataset.ratio;
+    setActiveChip('ratioRow','ratio',ratio);
+    try { localStorage.setItem('lp15_ratio', ratio); } catch(e){}
+  });
+  document.getElementById('outcomeRow').addEventListener('click', function(e){
+    var t = e.target.closest('.chip');
+    if(!t) return;
+    outcome = t.dataset.outcome;
+    setActiveChip('outcomeRow','outcome',outcome);
+    try { localStorage.setItem('lp15_outcome', outcome); } catch(e){}
+  });
+
+  // ---- Web Audio: synthesized beep/charge tone (no files needed for these) ----
+  var audioCtx = null;
+  function ctx(){
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  function beep(freq, dur, vol){
+    var c = ctx();
+    var o = c.createOscillator();
+    var g = c.createGain();
+    o.frequency.value = freq || 880;
+    o.type = 'square';
+    g.gain.value = (vol||0.15);
+    o.connect(g); g.connect(c.destination);
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + (dur||0.08));
+    o.stop(c.currentTime + (dur||0.08) + 0.02);
+  }
+  function chargeTone(totalMs){
+    var c = ctx();
+    var o = c.createOscillator();
+    var g = c.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(180, c.currentTime);
+    o.frequency.linearRampToValueAtTime(900, c.currentTime + totalMs/1000);
+    g.gain.value = 0.1;
+    o.connect(g); g.connect(c.destination);
+    o.start();
+    o.stop(c.currentTime + totalMs/1000 + 0.05);
+  }
+
+  // ---- Voice lines: file-based, with speech-synthesis fallback ----
+  // Drop mp3 files with these exact names into the /sounds folder to replace
+  // the built-in phone voice. Missing files fall back automatically.
+  var CLIPS = {
+    ventilate:      { file: 'sounds/ventilate.mp3',       fallback: 'Stop compressions. Ventilate.' },
+    analyzing:      { file: 'sounds/analyzing.mp3',       fallback: 'Analyzing heart rhythm. Do not touch the patient.' },
+    shockAdvised:   { file: 'sounds/shock-advised.mp3',   fallback: 'Shock advised. Charging.' },
+    charged:        { file: 'sounds/charged.mp3',         fallback: 'Charged. Stand clear.' },
+    noShock:        { file: 'sounds/no-shock.mp3',        fallback: 'No shock advised. Continue C P R.' },
+    shockDelivered: { file: 'sounds/shock-delivered.mp3', fallback: 'Shock delivered. Resume C P R.' }
+  };
+  var fileAvailability = {};   // clipKey -> true/false, filled in on first probe
+  var anyFileFound = false;
+
+  function speakFallback(text, cb){
+    try {
+      if(!('speechSynthesis' in window)) { if(cb) setTimeout(cb, 900); return; }
+      var u = new SpeechSynthesisUtterance(text);
+      u.rate = 0.95; u.pitch = 0.7; u.volume = 1;
+      u.onend = function(){ if(cb) cb(); };
+      u.onerror = function(){ if(cb) cb(); };
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+    } catch(e){ if(cb) setTimeout(cb, 900); }
+  }
+
+  function playClip(key, cb){
+    var clip = CLIPS[key];
+    if(!clip){ if(cb) cb(); return; }
+    if(fileAvailability[key] === false){
+      speakFallback(clip.fallback, cb);
+      return;
+    }
+    var audio = new Audio(clip.file);
+    var done = false;
+    function finish(){
+      if(done) return;
+      done = true;
+      if(cb) cb();
+    }
+    audio.addEventListener('ended', function(){
+      fileAvailability[key] = true;
+      finish();
+    });
+    audio.addEventListener('error', function(){
+      fileAvailability[key] = false;
+      updateBadge();
+      speakFallback(clip.fallback, finish);
+    });
+    var playPromise = audio.play();
+    if(playPromise && playPromise.catch){
+      playPromise.catch(function(){
+        fileAvailability[key] = false;
+        updateBadge();
+        speakFallback(clip.fallback, finish);
+      });
+    }
+  }
+
+  function updateBadge(){
+    var keys = Object.keys(CLIPS);
+    var known = keys.filter(function(k){ return fileAvailability[k] !== undefined; });
+    var found = keys.filter(function(k){ return fileAvailability[k] === true; });
+    if(known.length === 0){
+      soundBadge.textContent = 'checking sound files…';
+    } else if(found.length === 0){
+      soundBadge.textContent = 'using phone voice — no /sounds files found yet';
+    } else if(found.length < keys.length){
+      soundBadge.textContent = found.length + '/' + keys.length + ' custom sound files loaded';
+    } else {
+      soundBadge.textContent = 'all custom sound files loaded';
+    }
+  }
+
+  // Probe each clip once at load so the badge reflects reality early
+  // (a silent, muted pre-check keeps this from talking on page load).
+  Object.keys(CLIPS).forEach(function(key){
+    var probe = new Audio(CLIPS[key].file);
+    probe.muted = true;
+    probe.addEventListener('canplaythrough', function(){
+      fileAvailability[key] = true;
+      updateBadge();
+    }, { once: true });
+    probe.addEventListener('error', function(){
+      fileAvailability[key] = false;
+      updateBadge();
+    }, { once: true });
+    probe.load();
+  });
+  setTimeout(updateBadge, 1500);
+
+  // ---- CPR metronome ----
+  var cprTimers = [];
+  var cprRunning = false;
+  var BPM = 110;
+  var intervalMs = 60000 / BPM;
+
+  function clearCprTimers(){
+    cprTimers.forEach(function(t){ clearTimeout(t); clearInterval(t); });
+    cprTimers = [];
+  }
+
+  function runCompressionCycle(){
+    var perCycle = (ratio === '15:2') ? 15 : 30;
+    var count = 0;
+    counterEl.textContent = '0';
+    statusLine.textContent = 'CPR IN PROGRESS';
+    subLine.textContent = ratio === 'cont' ? 'Continuous compressions · 110/min' : ('Compress ' + perCycle + ' · then ventilate x2');
+
+    function tick(){
+      if(!cprRunning) return;
+      count++;
+      counterEl.textContent = String(count);
+      beep(1000, 0.06, 0.18);
+
+      if(ratio !== 'cont' && count >= perCycle){
+        subLine.textContent = 'Stop compressions · give 2 breaths';
+        playClip('ventilate');
+        var t = setTimeout(function(){
+          if(!cprRunning) return;
+          count = 0;
+          runCompressionCycle();
+        }, 4000);
+        cprTimers.push(t);
+        return;
+      }
+      var t2 = setTimeout(tick, intervalMs);
+      cprTimers.push(t2);
+    }
+    var t0 = setTimeout(tick, intervalMs);
+    cprTimers.push(t0);
+  }
+
+  function startCpr(){
+    cprRunning = true;
+    cprBtn.textContent = 'STOP CPR';
+    cprBtn.classList.remove('start');
+    cprBtn.classList.add('stop');
+    disableAedButtons(true);
+    runCompressionCycle();
+  }
+  function stopCpr(silent){
+    cprRunning = false;
+    clearCprTimers();
+    cprBtn.textContent = 'START CPR';
+    cprBtn.classList.remove('stop');
+    cprBtn.classList.add('start');
+    counterEl.textContent = '--';
+    if(!silent){
+      statusLine.textContent = 'READY';
+      subLine.textContent = 'Select a mode below';
+    }
+    disableAedButtons(false);
+  }
+  function disableAedButtons(disabled){
+    analyzeBtn.disabled = disabled;
+  }
+
+  cprBtn.addEventListener('click', function(){
+    ctx();
+    if(cprRunning) stopCpr(); else startCpr();
+  });
+
+  // ---- AED sequence ----
+  var aedTimers = [];
+  function clearAedTimers(){
+    aedTimers.forEach(clearTimeout);
+    aedTimers = [];
+  }
+
+  analyzeBtn.addEventListener('click', function(){
+    ctx();
+    if(cprRunning) stopCpr(true);
+    clearAedTimers();
+    analyzeBtn.disabled = true;
+    shockBtn.disabled = true;
+    statusLine.textContent = 'ANALYZING RHYTHM';
+    subLine.textContent = 'Do not touch the patient';
+    playClip('analyzing');
+
+    var t1 = setTimeout(function(){
+      if(outcome === 'shock'){
+        statusLine.textContent = 'SHOCK ADVISED';
+        subLine.textContent = 'Charging';
+        playClip('shockAdvised');
+        chargeTone(3000);
+        var t2 = setTimeout(function(){
+          statusLine.textContent = 'CHARGED';
+          subLine.textContent = 'Stand clear · press SHOCK';
+          playClip('charged');
+          shockBtn.disabled = false;
+        }, 3000);
+        aedTimers.push(t2);
+      } else {
+        statusLine.textContent = 'NO SHOCK ADVISED';
+        subLine.textContent = 'Resuming CPR';
+        playClip('noShock', function(){
+          analyzeBtn.disabled = false;
+          startCpr();
+        });
+      }
+    }, 3500);
+    aedTimers.push(t1);
+  });
+
+  shockBtn.addEventListener('click', function(){
+    ctx();
+    beep(220, 0.4, 0.3);
+    shockBtn.disabled = true;
+    statusLine.textContent = 'SHOCK DELIVERED';
+    subLine.textContent = 'Resuming CPR';
+    playClip('shockDelivered', function(){
+      analyzeBtn.disabled = false;
+      startCpr();
+    });
+  });
+
+  // simple ECG line jitter for a bit of life
+  var ecg = document.getElementById('ecg');
+  setInterval(function(){
+    var jitter = (Math.random()*4-2).toFixed(1);
+    ecg.setAttribute('points', '0,32 40,32 55,32 60,'+(10+jitter*0|0)+' 65,55 70,20 75,32 400,32');
+  }, 1200);
+})();
+</script>
+</body>
+</html>
